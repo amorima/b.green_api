@@ -7,8 +7,10 @@
 require_once 'config.php';
 require_once 'functions.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendError(405, 'Método não permitido');
+}
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    sendError(405, 'Metodo nao permitido');
 }
 
 $key = null;
@@ -20,8 +22,10 @@ if (!$key) {
     $key = $_SERVER['HTTP_X_API_KEY'] ?? null;
 }
 
-if (!$key) {
     sendError(401, 'API Key obrigatória. Use header X-API-Key');
+}
+if (!$key) {
+    sendError(401, 'API Key obrigatoria. Use header X-API-Key');
 }
 
 $keys = loadApiKeys();
@@ -36,8 +40,10 @@ foreach ($keys as $index => &$k) {
     }
 }
 
-if (!$found) {
     sendError(403, 'API Key inválida ou bloqueada');
+}
+if (!$found) {
+    sendError(403, 'API Key invalida ou bloqueada');
 }
 
 $keys[$keyIndex]['requests'] = ($keys[$keyIndex]['requests'] ?? 0) + 1;
@@ -82,8 +88,10 @@ $unit = "kg CO2e";
 if (isset($DEVICE_POWER_WATTS[$type])) {
     // Cálculo para dispositivos
     $minutes = $input['minutes'] ?? null;
-    if ($minutes === null) {
         sendError(400, "Campo 'minutes' obrigatório para dispositivos");
+    }
+    if ($minutes === null) {
+        sendError(400, "Campo 'minutes' obrigatorio para dispositivos");
     }
     $watts = $DEVICE_POWER_WATTS[$type];
     $hours = $minutes / 60;
@@ -92,12 +100,15 @@ if (isset($DEVICE_POWER_WATTS[$type])) {
 } elseif (isset($CARBON_FACTORS[$type])) {
     // Cálculo geral
     $amount = $input['amount'] ?? null;
-    if ($amount === null) {
         sendError(400, "Campo 'amount' obrigatório");
+    }
+    if ($amount === null) {
+        sendError(400, "Campo 'amount' obrigatorio");
     }
     $carbon = $amount * $CARBON_FACTORS[$type];
 } else {
-    sendError(400, "Tipo de cálculo inválido");
+}
+    sendError(400, "Tipo de calculo invalido");
 }
 
 $response = [

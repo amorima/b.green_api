@@ -6,8 +6,10 @@
  */
 require_once 'config.php';
 require_once 'functions.php';
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendError(405, 'Método não permitido');
+}
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    sendError(405, 'Metodo nao permitido');
 }
 
 // Tentar obter password do header (como o frontend envia)
@@ -26,9 +28,14 @@ if (!$pass) {
     $pass = $input['pass'] ?? null;
 }
 
-// Validar apenas a password (já que o frontend só envia password)
 if (password_verify($pass, ADMIN_PASS_HASH)) {
     sendSuccess('Login efetuado', ['token' => ADMIN_TOKEN]);
 } else {
     sendError(401, 'Credenciais inválidas');
+}
+// Validar apenas a password (ja que o frontend so envia password)
+if (password_verify($pass, ADMIN_PASS_HASH)) {
+    sendSuccess('Login efetuado', ['token' => ADMIN_TOKEN]);
+} else {
+    sendError(401, 'Credenciais invalidas');
 }
