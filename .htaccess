@@ -1,9 +1,5 @@
-
-
 RewriteEngine On
-
-RewriteEngine On
-RewriteBase /
+RewriteBase /api/
 
 # Permitir acesso a ficheiros estáticos
 RewriteCond %{REQUEST_FILENAME} -f
