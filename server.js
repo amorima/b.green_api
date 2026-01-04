@@ -101,7 +101,7 @@ const DEVICE_POWER_WATTS = {
 // =================================================================
 
 app.post("/api/calculate", (req, res) => {
-  const { type, amount, minutes } = req.body;
+  const { type, amount, minutes, power_watts } = req.body;
 
   // Validação inicial
   if (!type) {
@@ -132,13 +132,21 @@ app.post("/api/calculate", (req, res) => {
         .json({ error: "É necessário 'minutes' válido para equipamentos." });
     }
 
+    // Se power_watts for fornecido, usa esse valor. Caso contrário, usa o valor padrão.
+    const effectivePower =
+      power_watts !== undefined && power_watts > 0
+        ? power_watts
+        : DEVICE_POWER_WATTS[type];
+
     const hours = minutes / 60;
-    const kwh = (DEVICE_POWER_WATTS[type] / 1000) * hours;
+    const kwh = (effectivePower / 1000) * hours;
     carbonFootprint = kwh * CARBON_FACTORS["electricity_pt"];
 
     details = {
       methodology: "Time-based Energy Estimation",
-      power_watts: DEVICE_POWER_WATTS[type],
+      power_watts: effectivePower,
+      is_custom_power: power_watts !== undefined && power_watts > 0,
+      standard_power_watts: DEVICE_POWER_WATTS[type],
       estimated_kwh: parseFloat(kwh.toFixed(4)),
     };
   } else {
