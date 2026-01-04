@@ -1,4 +1,4 @@
 <?php
-// Redirect para a documentação principal
-header('Location: /public/index.html');
+// Redireciona para a página principal
+header('Location: /index.html');
 exit();
