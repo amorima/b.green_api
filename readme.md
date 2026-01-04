@@ -29,6 +29,7 @@ API REST desenvolvida em PHP para cálculo de pegada ecológica e emissões de c
 ## 📚 Documentação da API
 
 ### 1. Solicitar API Key
+
 Gera uma nova chave de acesso associada a um email.
 
 - **Endpoint:** `POST /request-key`
@@ -51,6 +52,7 @@ Gera uma nova chave de acesso associada a um email.
   ```
 
 ### 2. Calcular Emissões
+
 Realiza o cálculo de CO2e com base no tipo de atividade.
 
 - **Endpoint:** `POST /calculate`
@@ -78,6 +80,7 @@ Realiza o cálculo de CO2e com base no tipo de atividade.
   - **Dispositivos (usar `minutes`):** `laptop`, `desktop`, `television`, `air_conditioner`, `refrigerator`, `washing_machine`, `dishwasher`
 
 ### 3. Informações da API
+
 - **Endpoint:** `GET /info`
 - **Resposta:** Detalhes sobre a versão e autor.
 
@@ -119,4 +122,5 @@ Acesse a `/admin.html` para gerir as chaves.
 - Autenticação de Admin feita via Header `X-Admin-Password`.
 
 ---
+
 Desenvolvido no âmbito da disciplina de Programação Web I.
