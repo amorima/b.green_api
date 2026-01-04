@@ -80,7 +80,7 @@ $carbon = 0;
 $unit = "kg CO2e";
 
 if (isset($DEVICE_POWER_WATTS[$type])) {
-    // Device calculation
+    // Cálculo para dispositivos
     $minutes = $input['minutes'] ?? null;
     if ($minutes === null) {
         sendError(400, "Campo 'minutes' obrigatório para dispositivos");
@@ -90,7 +90,7 @@ if (isset($DEVICE_POWER_WATTS[$type])) {
     $kwh = ($watts * $hours) / 1000;
     $carbon = $kwh * $CARBON_FACTORS['electricity'];
 } elseif (isset($CARBON_FACTORS[$type])) {
-    // General calculation
+    // Cálculo geral
     $amount = $input['amount'] ?? null;
     if ($amount === null) {
         sendError(400, "Campo 'amount' obrigatório");
