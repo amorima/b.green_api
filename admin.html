@@ -215,7 +215,7 @@
           });
           const d = await r.json();
           if (!d.success) return alert(d.error);
-          const keys = d.data;
+          const keys = d.data.keys;
           let totalReqs = 0,
             active = 0;
           keys.forEach((k) => {
