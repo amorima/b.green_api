@@ -27,9 +27,6 @@ function authenticateApiKey()
 {
     $headers = getallheaders();
     $apiKey = $headers['X-API-Key'] ?? $headers['x-api-key'] ?? null;
-        sendError(401, 'API Key obrigatória. Use header X-API-Key');
-        return false;
-    }
     if (!$apiKey) {
         sendError(401, 'API Key obrigatoria. Use header X-API-Key');
         return false;
@@ -44,14 +41,8 @@ function authenticateApiKey()
             break;
         }
     }
-        sendError(401, 'API Key inválida');
-        return false;
-    }
     if (!$keyData) {
         sendError(401, 'API Key invalida');
-        return false;
-    }
-        sendError(403, 'API Key bloqueada');
         return false;
     }
     if ($keyData['blocked'] ?? false) {
@@ -67,9 +58,6 @@ function authenticateAdmin()
 {
     $headers = getallheaders();
     $password = $headers['X-Admin-Password'] ?? $headers['x-admin-password'] ?? null;
-        sendError(401, 'Não autenticado');
-        return false;
-    }
     if (!password_verify($password, ADMIN_PASS_HASH)) {
         sendError(401, 'Nao autenticado');
         return false;
