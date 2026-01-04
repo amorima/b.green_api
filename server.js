@@ -1,187 +1,265 @@
-/**
- * b-green EcoTracker API - Motor de Cálculo de Emissões de Carbono (CO2e)
- * Projeto: PW1 Eco Tracker
- * * Descrição:
- * API RESTful desenvolvida em Node.js/Express. Responsável por receber dados
- * de consumo (transportes, energia, resíduos) e convertê-los em impacto ambiental
- * utilizando fatores de emissão padronizados internacionalmente.
- * * Funcionalidades:
- * - Acesso público (CORS Open) com proteção contra abuso (Rate Limiting).
- * - Base de dados de fatores baseada no UK Gov (2024) e EEA (Agência Europeia do Ambiente).
- * - Cálculo híbrido: por quantidade (litros/km) e por tempo de uso (dispositivos elétricos).
+﻿/**
+ * b.green API - Carbon Emissions Calculator
+ * API REST para cálculo de emissões de CO2
  */
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
+const fs = require("fs").promises;
+const path = require("path");
+const crypto = require("crypto");
+
+const ADMIN_PASSWORD = "bgreen2026";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const API_KEYS_FILE = path.join(__dirname, "data", "api-keys.json");
 
-// =================================================================
-// 1. CONFIGURAÇÃO DE SEGURANÇA E ACESSO
-// =================================================================
-
-// CORS: Permite que qualquer origem aceda à API (Open API).
-// Essencial para que o frontend no GitHub Pages comunique com este servidor.
 app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static("public"));
 
-// Rate Limiter: Medida de segurança para APIs públicas.
-// Limita cada IP a 100 pedidos a cada 15 minutos para prevenir ataques DoS.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: {
-    error: "Limite de pedidos excedido. Tente novamente em 15 minutos.",
-  },
   standardHeaders: true,
   legacyHeaders: false,
+  message: {
+    success: false,
+    error: "Limite de pedidos excedido (100 req/15min)",
+  },
 });
-app.use(limiter);
 
-// Body Parser: Processa o JSON recebido no corpo do pedido.
-app.use(bodyParser.json());
-
-// =================================================================
-// 2. BASE DE DADOS DE FATORES DE EMISSÃO
-// =================================================================
-
-/**
- * Fatores de Conversão (kg CO2e por Unidade).
- * Fontes:
- * - Department for Energy Security and Net Zero (UK Gov 2024)
- * - European Environment Agency (EEA) - Intensidade elétrica PT
- */
 const CARBON_FACTORS = {
-  // --- Energia Doméstica ---
-  electricity_pt: 0.188, // kg/kWh (Mix Portugal - média recente)
-  natural_gas: 0.202, // kg/kWh
-  lpg: 1.557, // kg/litro (Gás de botija)
-  heating_oil: 2.758, // kg/litro (Gasóleo aquecimento)
-  wood_pellets: 0.015, // kg/kWh (Biomassa)
-
-  // --- Transportes (kg/km) ---
-  car_gasoline: 0.17, // Carro médio gasolina
-  car_diesel: 0.171, // Carro médio diesel
-  car_electric: 0.047, // Carro elétrico (ciclo vida)
-  bus_urban: 0.096, // Autocarro urbano
-  train: 0.035, // Comboio
-  plane_short: 0.244, // Voo < 3700km (inc. forçamento radiativo)
-  plane_long: 0.193, // Voo > 3700km
-
-  // --- Resíduos e Água ---
-  water_supply: 0.149, // kg/m3
-  waste_landfill: 0.467, // kg/kg (Aterro)
-  waste_recycle: 0.021, // kg/kg (Reciclagem)
-
-  // --- Alimentação (kg/kg - Média Global OurWorldInData) ---
-  beef: 60.0,
-  chicken: 6.0,
-  pork: 7.0,
-  vegetables: 0.4,
+  car_gasoline: 0.17,
+  car_diesel: 0.185,
+  car_electric: 0.045,
+  bus: 0.089,
+  train: 0.041,
+  plane_short: 0.255,
+  plane_long: 0.195,
+  electricity: 0.188,
+  natural_gas: 0.203,
+  heating_oil: 0.265,
+  meal_meat: 7.2,
+  meal_vegetarian: 2.0,
+  meal_vegan: 1.5,
+  waste_general: 0.45,
+  waste_recycled: 0.021,
+  water: 0.149,
 };
 
-/**
- * Potência Média de Dispositivos (Watts).
- * Utilizado para converter tempo de uso (minutos) em energia (kWh).
- */
 const DEVICE_POWER_WATTS = {
   laptop: 50,
   desktop: 200,
-  smartphone: 5,
-  tv_led: 100,
-  fridge: 150,
-  air_conditioner: 1000,
-  shower_electric: 3500,
+  television: 150,
+  air_conditioner: 3500,
+  refrigerator: 150,
+  washing_machine: 500,
+  dishwasher: 1800,
 };
 
-// =================================================================
-// 3. ENDPOINT DE CÁLCULO
-// =================================================================
-
-app.post("/api/calculate", (req, res) => {
-  const { type, amount, minutes, power_watts } = req.body;
-
-  // Validação inicial
-  if (!type) {
-    return res.status(400).json({ error: "O campo 'type' é obrigatório." });
+async function loadApiKeys() {
+  try {
+    const data = await fs.readFile(API_KEYS_FILE, "utf8");
+    return JSON.parse(data);
+  } catch {
+    return [];
   }
+}
 
-  let carbonFootprint = 0;
-  let details = {};
+async function saveApiKeys(keys) {
+  await fs.writeFile(API_KEYS_FILE, JSON.stringify(keys, null, 2));
+}
 
-  // CENÁRIO A: Cálculo Direto (Combustíveis, Km, Kg)
-  // Fórmula: Quantidade * Fator
-  if (CARBON_FACTORS[type] !== undefined) {
-    if (amount === undefined || amount < 0) {
-      return res
-        .status(400)
-        .json({ error: "É necessário um 'amount' válido." });
-    }
+function generateApiKey() {
+  return "bgk_" + crypto.randomBytes(24).toString("hex");
+}
 
-    carbonFootprint = amount * CARBON_FACTORS[type];
-    details = { methodology: "Direct Multiplication (Factor * Amount)" };
+async function authenticateApiKey(req, res, next) {
+  const apiKey = req.headers["x-api-key"];
+  if (!apiKey) {
+    return res
+      .status(401)
+      .json({
+        success: false,
+        error: "API Key obrigatória. Use header X-API-Key",
+      });
+  }
+  const keys = await loadApiKeys();
+  const keyData = keys.find((k) => k.key === apiKey);
+  if (!keyData) {
+    return res.status(401).json({ success: false, error: "API Key inválida" });
+  }
+  if (keyData.blocked) {
+    return res.status(403).json({ success: false, error: "API Key bloqueada" });
+  }
+  keyData.requests = (keyData.requests || 0) + 1;
+  keyData.lastUsed = new Date().toISOString();
+  await saveApiKeys(keys);
+  next();
+}
 
-    // CENÁRIO B: Cálculo de Dispositivos (Tempo -> Energia -> CO2)
-    // Fórmula: (Watts / 1000) * Horas * Fator Eletricidade PT
-  } else if (DEVICE_POWER_WATTS[type] !== undefined) {
-    if (minutes === undefined || minutes < 0) {
-      return res
-        .status(400)
-        .json({ error: "É necessário 'minutes' válido para equipamentos." });
-    }
+app.get("/", (req, res) =>
+  res.sendFile(path.join(__dirname, "public", "index.html"))
+);
 
-    // Se power_watts for fornecido, usa esse valor. Caso contrário, usa o valor padrão.
-    const effectivePower =
-      power_watts !== undefined && power_watts > 0
-        ? power_watts
-        : DEVICE_POWER_WATTS[type];
-
-    const hours = minutes / 60;
-    const kwh = (effectivePower / 1000) * hours;
-    carbonFootprint = kwh * CARBON_FACTORS["electricity_pt"];
-
-    details = {
-      methodology: "Time-based Energy Estimation",
-      power_watts: effectivePower,
-      is_custom_power: power_watts !== undefined && power_watts > 0,
-      standard_power_watts: DEVICE_POWER_WATTS[type],
-      estimated_kwh: parseFloat(kwh.toFixed(4)),
-    };
-  } else {
-    return res.status(404).json({
-      error: "Tipo de consumo não encontrado.",
-      available_types: [
-        ...Object.keys(CARBON_FACTORS),
-        ...Object.keys(DEVICE_POWER_WATTS),
-      ],
+app.post("/api/request-key", async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes("@")) {
+    return res
+      .status(400)
+      .json({ success: false, error: "Email válido obrigatório" });
+  }
+  const keys = await loadApiKeys();
+  const existing = keys.find((k) => k.email === email);
+  if (existing) {
+    return res.json({
+      success: true,
+      message: "Key existente retornada",
+      data: {
+        key: existing.key,
+        email: existing.email,
+        createdAt: existing.createdAt,
+        requests: existing.requests || 0,
+      },
     });
   }
-
-  // Resposta final formatada
-  return res.json({
+  const newKey = {
+    key: generateApiKey(),
+    email,
+    createdAt: new Date().toISOString(),
+    requests: 0,
+    blocked: false,
+    lastUsed: null,
+  };
+  keys.push(newKey);
+  await saveApiKeys(keys);
+  res.json({
     success: true,
-    data: {
-      type: type,
-      input: amount || minutes,
-      carbon_kg: parseFloat(carbonFootprint.toFixed(3)),
-      source: "UK Gov 2024 & EEA",
-      ...details,
-    },
-    timestamp: new Date().toISOString(),
+    message: "API Key criada com sucesso",
+    data: { key: newKey.key, email: newKey.email, createdAt: newKey.createdAt },
   });
 });
 
-// Inicialização do Servidor
-app.listen(PORT, () => {
-  console.log(`\n--- EcoTracker API ---`);
-  console.log(`Status: Online`);
-  console.log(`Porta: ${PORT}`);
-  console.log(
-    `Fatores carregados: ${
-      Object.keys(CARBON_FACTORS).length +
-      Object.keys(DEVICE_POWER_WATTS).length
-    }`
-  );
+app.post("/api/calculate", authenticateApiKey, limiter, (req, res) => {
+  const { type, amount, minutes, power_watts } = req.body;
+  if (!type)
+    return res
+      .status(400)
+      .json({ success: false, error: "Campo type obrigatório" });
+
+  const isDevice = DEVICE_POWER_WATTS.hasOwnProperty(type);
+  if (isDevice) {
+    if (!minutes || minutes <= 0)
+      return res
+        .status(400)
+        .json({ success: false, error: "Campo minutes obrigatório" });
+    const effectivePower =
+      power_watts && power_watts > 0 ? power_watts : DEVICE_POWER_WATTS[type];
+    const kwh = (effectivePower / 1000) * (minutes / 60);
+    const carbonKg = kwh * CARBON_FACTORS.electricity;
+    return res.json({
+      success: true,
+      data: {
+        type,
+        minutes,
+        power_watts: effectivePower,
+        is_custom_power: power_watts && power_watts > 0,
+        standard_power_watts: DEVICE_POWER_WATTS[type],
+        kwh: parseFloat(kwh.toFixed(3)),
+        carbon_kg: parseFloat(carbonKg.toFixed(3)),
+        unit: "kg CO2e",
+      },
+    });
+  }
+
+  const factor = CARBON_FACTORS[type];
+  if (!factor)
+    return res
+      .status(400)
+      .json({ success: false, error: "Tipo não reconhecido" });
+  if (!amount || amount <= 0)
+    return res
+      .status(400)
+      .json({ success: false, error: "Campo amount obrigatório" });
+  const carbonKg = amount * factor;
+  res.json({
+    success: true,
+    data: {
+      type,
+      amount,
+      factor,
+      carbon_kg: parseFloat(carbonKg.toFixed(3)),
+      unit: "kg CO2e",
+    },
+  });
 });
+
+app.post("/admin/login", (req, res) => {
+  if (req.body.password !== ADMIN_PASSWORD)
+    return res
+      .status(401)
+      .json({ success: false, error: "Password incorreta" });
+  res.json({ success: true, message: "Login efetuado" });
+});
+
+app.get("/admin/keys", async (req, res) => {
+  if (req.headers["x-admin-password"] !== ADMIN_PASSWORD)
+    return res.status(401).json({ success: false, error: "Não autenticado" });
+  const keys = await loadApiKeys();
+  res.json({ success: true, data: keys });
+});
+
+app.put("/admin/keys/:key/block", async (req, res) => {
+  if (req.headers["x-admin-password"] !== ADMIN_PASSWORD)
+    return res.status(401).json({ success: false, error: "Não autenticado" });
+  const keys = await loadApiKeys();
+  const keyData = keys.find((k) => k.key === req.params.key);
+  if (!keyData)
+    return res
+      .status(404)
+      .json({ success: false, error: "Key não encontrada" });
+  keyData.blocked = req.body.blocked;
+  await saveApiKeys(keys);
+  res.json({
+    success: true,
+    message: req.body.blocked ? "Key bloqueada" : "Key desbloqueada",
+    data: keyData,
+  });
+});
+
+app.delete("/admin/keys/:key", async (req, res) => {
+  if (req.headers["x-admin-password"] !== ADMIN_PASSWORD)
+    return res.status(401).json({ success: false, error: "Não autenticado" });
+  const keys = await loadApiKeys();
+  const filtered = keys.filter((k) => k.key !== req.params.key);
+  if (filtered.length === keys.length)
+    return res
+      .status(404)
+      .json({ success: false, error: "Key não encontrada" });
+  await saveApiKeys(filtered);
+  res.json({ success: true, message: "Key eliminada" });
+});
+
+app.get("/api/info", (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      name: "b.green API",
+      version: "1.0.0",
+      types: Object.keys(CARBON_FACTORS),
+      devices: Object.keys(DEVICE_POWER_WATTS),
+      rateLimit: "100 requests / 15 minutes per key",
+      documentation: "https://www.antonioamorim.pt/api/",
+    },
+  });
+});
+
+app.listen(PORT, () =>
+  console.log(
+    ` b.green API iniciada na porta ${PORT}\n https://www.antonioamorim.pt/api`
+  )
+);

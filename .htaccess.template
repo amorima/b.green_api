@@ -1,0 +1,44 @@
+# Configuração de Proxy Reverso para Node.js
+# Este ficheiro deve ser colocado na pasta pública da API em cPanel
+
+# Ativar módulos necessários
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Não redirecionar ficheiros e directórios existentes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Redirecionar tudo para Node.js através do proxy
+    RewriteRule ^(.*)$ http://localhost:%PORTA%/$1 [P,L]
+</IfModule>
+
+# Configuração de Proxy (Alternativa se RewriteEngine não funcionar)
+<IfModule mod_proxy.c>
+    ProxyPreserveHost On
+    
+    # Redirecionar pedidos /api/* para Node.js
+    ProxyPass / http://localhost:%PORTA%/
+    ProxyPassReverse / http://localhost:%PORTA%/
+</IfModule>
+
+# Headers de Segurança
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Compressão Gzip
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE text/html
+</IfModule>
+
+# Caching (opcional - comentar se não desejar)
+# <IfModule mod_expires.c>
+#     ExpiresActive On
+#     ExpiresByType application/json "access plus 0 seconds"
+# </IfModule>
