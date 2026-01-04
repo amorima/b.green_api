@@ -3,10 +3,17 @@ RewriteBase /
 
 # Permitir acesso a ficheiros estáticos
 RewriteCond %{REQUEST_FILENAME} -f
+
+RewriteEngine On
+RewriteBase /api/
+
+# Permitir acesso a ficheiros estáticos
+RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
-# Redirecionar raiz para index.php (que redireciona para public/index.html)
-RewriteRule ^$ index.php [L]
+# Redirecionar raiz /api/ para public/index.html
+RewriteRule ^$ public/index.html [L]
+RewriteRule ^index.html$ public/index.html [L]
 
 # Bloquear listagem de diretórios
 Options -Indexes
@@ -19,18 +26,14 @@ RewriteRule ^data/ - [F]
 </FilesMatch>
 
 # API Routes
-RewriteRule ^api/request-key/?$ api/request-key.php [L]
-RewriteRule ^api/calculate/?$ api/calculate.php [L]
-RewriteRule ^api/info/?$ api/info.php [L]
-RewriteRule ^api/admin-login/?$ api/admin-login.php [L]
-RewriteRule ^api/admin-keys/?$ api/admin-keys.php [QSA,L]
-RewriteRule ^api/admin-keys/([^/]+)/block/?$ api/admin-keys.php?key=$1&action=block [QSA,L]
-RewriteRule ^api/admin-keys/([^/]+)/?$ api/admin-keys.php?key=$1 [QSA,L]
-
+RewriteRule ^request-key/?$ api/request-key.php [L]
+RewriteRule ^calculate/?$ api/calculate.php [L]
+RewriteRule ^info/?$ api/info.php [L]
+RewriteRule ^admin-login/?$ api/admin-login.php [L]
+RewriteRule ^admin-keys/?$ api/admin-keys.php [QSA,L]
+RewriteRule ^admin-keys/([^/]+)/block/?$ api/admin-keys.php?key=$1&action=block [QSA,L]
+RewriteRule ^admin-keys/([^/]+)/?$ api/admin-keys.php?key=$1 [QSA,L]
 
 # Admin interface
-RewriteRule ^api/admin.html$ public/admin.html [L]
+RewriteRule ^admin.html$ public/admin.html [L]
 RewriteRule ^admin/admin.html$ admin/admin.html [L]
-
-# Public interface
-RewriteRule ^public/index.html$ public/index.html [L]
