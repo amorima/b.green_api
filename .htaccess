@@ -5,25 +5,32 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
-# Bloquear acesso direto à raiz (exceto index.php)
-RewriteCond %{REQUEST_URI} !^/index.php$
-RewriteCond %{REQUEST_URI} !^/public/
-RewriteCond %{REQUEST_URI} !^/api/
-RewriteRule ^(?!public/|api/|index.php$).*$ - [F]
+# Redirecionar raiz para index.php (que redireciona para public/index.html)
+RewriteRule ^$ index.php [L]
+
+# Bloquear listagem de diretórios
+Options -Indexes
+
+# Bloquear acesso direto à pasta data e ficheiros sensíveis
+RewriteRule ^data/ - [F]
+<FilesMatch "\.(json|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
 
 # API Routes
 RewriteRule ^api/request-key/?$ api/request-key.php [L]
 RewriteRule ^api/calculate/?$ api/calculate.php [L]
 RewriteRule ^api/info/?$ api/info.php [L]
+RewriteRule ^api/admin-login/?$ api/admin-login.php [L]
+RewriteRule ^api/admin-keys/?$ api/admin-keys.php [QSA,L]
+RewriteRule ^api/admin-keys/([^/]+)/block/?$ api/admin-keys.php?key=$1&action=block [QSA,L]
+RewriteRule ^api/admin-keys/([^/]+)/?$ api/admin-keys.php?key=$1 [QSA,L]
 
-# Admin Routes
-RewriteRule ^admin/login/?$ api/admin-login.php [L]
-RewriteRule ^admin/keys/?$ api/admin-keys.php [QSA,L]
-RewriteRule ^admin/keys/([^/]+)/block/?$ api/admin-keys.php?key=$1&action=block [QSA,L]
-RewriteRule ^admin/keys/([^/]+)/?$ api/admin-keys.php?key=$1 [QSA,L]
 
-# Segurança
-<FilesMatch "\.(json|log)$">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
+# Admin interface
+RewriteRule ^api/admin.html$ public/admin.html [L]
+RewriteRule ^admin/admin.html$ admin/admin.html [L]
+
+# Public interface
+RewriteRule ^public/index.html$ public/index.html [L]

@@ -1,342 +1,671 @@
 ﻿<!DOCTYPE html>
 <html lang="pt">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>b.green API - Cálculo de Emissões de Carbono</title>
-<style>
-:root{--green-primary:#8cb161;--green-secondary:#426934;--green-dark:#234736;--green-light:#e5eda0;--text-dark:#1c1917;--text-medium:#253f1d;--border:#e7e5e4;--bg:#ffffff;--input-bg:#f5f5f4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text-dark);line-height:1.6}.container{max-width:1200px;margin:0 auto;padding:2rem}header{background:linear-gradient(135deg,var(--green-secondary),var(--green-primary));color:white;padding:3rem 2rem;border-radius:12px;margin-bottom:3rem;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{font-size:2.5rem;margin-bottom:0.5rem}h2{color:var(--green-dark);margin:2rem 0 1rem;font-size:1.8rem}h3{color:var(--green-secondary);margin:1.5rem 0 0.8rem;font-size:1.3rem}.section{background:white;padding:2rem;border-radius:8px;border:1px solid var(--border);margin-bottom:2rem;box-shadow:0 2px 4px rgba(0,0,0,0.05)}input,select,textarea{width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);font-size:1rem;font-family:inherit}input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green-primary);background:white}button{background:var(--green-primary);color:white;padding:0.8rem 2rem;border:none;border-radius:6px;font-size:1rem;cursor:pointer;font-weight:600;transition:all 0.2s}button:hover{background:var(--green-secondary);transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.15)}.result{margin-top:1rem;padding:1rem;background:var(--input-bg);border-left:4px solid var(--green-primary);border-radius:4px;white-space:pre-wrap}.code{background:var(--green-dark);color:var(--green-light);padding:1rem;border-radius:6px;overflow-x:auto;font-family:'Courier New',monospace;font-size:0.9rem;margin:1rem 0}.hidden{display:none}.form-group{margin-bottom:1rem}label{display:block;margin-bottom:0.5rem;color:var(--text-medium);font-weight:600}table{width:100%;border-collapse:collapse;margin:1rem 0}table th,table td{padding:0.8rem;text-align:left;border-bottom:1px solid var(--border)}table th{background:var(--green-dark);color:white;font-weight:600}table tr:hover{background:var(--input-bg)}ul{margin-left:1.5rem;line-height:2}ul li{margin-bottom:0.5rem}.badge{display:inline-block;padding:0.3rem 0.6rem;background:var(--green-light);color:var(--green-dark);border-radius:4px;font-size:0.85rem;font-weight:600;margin-right:0.5rem}.endpoint{background:var(--input-bg);padding:1rem;border-left:3px solid var(--green-primary);margin:1rem 0;border-radius:4px}.endpoint-method{display:inline-block;padding:0.2rem 0.6rem;background:var(--green-primary);color:white;border-radius:4px;font-weight:600;font-size:0.85rem;margin-right:0.5rem}
-</style>
-</head>
-<body>
-<div class="container">
-<header>
-<h1> b.green API</h1>
-<p>API REST para cálculo de emissões de carbono de atividades quotidianas</p>
-</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>b.green API - Cálculo de Emissões de Carbono</title>
+    <style>
+      :root {
+        --green-primary: #8cb161;
+        --green-secondary: #426934;
+        --green-dark: #234736;
+        --green-light: #e5eda0;
+        --text-dark: #1c1917;
+        --text-medium: #253f1d;
+        --border: #e7e5e4;
+        --bg: #ffffff;
+        --input-bg: #f5f5f4;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text-dark);
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--green-secondary),
+          var(--green-primary)
+        );
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+      }
+      h2 {
+        color: var(--green-dark);
+        margin: 2rem 0 1rem;
+        font-size: 1.8rem;
+      }
+      h3 {
+        color: var(--green-secondary);
+        margin: 1.5rem 0 0.8rem;
+        font-size: 1.3rem;
+      }
+      .section {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--input-bg);
+        font-size: 1rem;
+        font-family: inherit;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--green-primary);
+        background: white;
+      }
+      button {
+        background: var(--green-primary);
+        color: white;
+        padding: 0.8rem 2rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      button:hover {
+        background: var(--green-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+      .result {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--input-bg);
+        border-left: 4px solid var(--green-primary);
+        border-radius: 4px;
+        white-space: pre-wrap;
+      }
+      .code {
+        background: var(--green-dark);
+        color: var(--green-light);
+        padding: 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+        margin: 1rem 0;
+      }
+      .hidden {
+        display: none;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-medium);
+        font-weight: 600;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      table th,
+      table td {
+        padding: 0.8rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      table th {
+        background: var(--green-dark);
+        color: white;
+        font-weight: 600;
+      }
+      table tr:hover {
+        background: var(--input-bg);
+      }
+      ul {
+        margin-left: 1.5rem;
+        line-height: 2;
+      }
+      ul li {
+        margin-bottom: 0.5rem;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.3rem 0.6rem;
+        background: var(--green-light);
+        color: var(--green-dark);
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+      }
+      .endpoint {
+        background: var(--input-bg);
+        padding: 1rem;
+        border-left: 3px solid var(--green-primary);
+        margin: 1rem 0;
+        border-radius: 4px;
+      }
+      .endpoint-method {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        background: var(--green-primary);
+        color: white;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>b.green API</h1>
+        <p>
+          API REST para cálculo de emissões de carbono de atividades quotidianas
+        </p>
+      </header>
 
-<div class="section">
-<h2> 1. Obter API Key</h2>
-<p>Para usar a API, precisa de uma chave de acesso. Insira o seu email para gerar ou recuperar a sua key:</p>
-<div class="form-group">
-<label>Email:</label>
-<input type="email" id="email" placeholder="seu@email.com">
-</div>
-<button onclick="requestKey()">Obter API Key</button>
-<div id="keyResult" class="result hidden"></div>
-</div>
+      <div class="section">
+        <h2>1. Obter API Key</h2>
+        <p>
+          Para usar a API, precisa de uma chave de acesso. Insira o seu email
+          para gerar ou recuperar a sua key:
+        </p>
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" id="email" placeholder="seu@email.com" />
+        </div>
+        <button onclick="requestKey()">Obter API Key</button>
+        <div id="keyResult" class="result hidden"></div>
+      </div>
 
-<div class="section">
-<h2> 2. Testar API</h2>
-<p>Teste o cálculo de emissões com a sua API Key:</p>
-<div class="form-group">
-<label>API Key:</label>
-<input type="text" id="apiKey" placeholder="bgk_...">
-</div>
-<div class="form-group">
-<label>Tipo de Atividade:</label>
-<select id="type" onchange="updateForm()">
-<optgroup label=" Transportes">
-<option value="car_gasoline">Carro a Gasolina (km)</option>
-<option value="car_diesel">Carro a Diesel (km)</option>
-<option value="car_electric">Carro Elétrico (km)</option>
-<option value="bus">Autocarro (km)</option>
-<option value="train">Comboio (km)</option>
-<option value="plane_short">Avião Curta Distância (km)</option>
-<option value="plane_long">Avião Longa Distância (km)</option>
-</optgroup>
-<optgroup label=" Energia">
-<option value="electricity">Eletricidade (kWh)</option>
-<option value="natural_gas">Gás Natural (m)</option>
-<option value="heating_oil">Gasóleo de Aquecimento (L)</option>
-</optgroup>
-<optgroup label=" Alimentação">
-<option value="meal_meat">Refeição com Carne</option>
-<option value="meal_vegetarian">Refeição Vegetariana</option>
-<option value="meal_vegan">Refeição Vegan</option>
-</optgroup>
-<optgroup label=" Resíduos">
-<option value="waste_general">Lixo Geral (kg)</option>
-<option value="waste_recycled">Reciclagem (kg)</option>
-<option value="water">Água (L)</option>
-</optgroup>
-<optgroup label=" Dispositivos (por tempo de uso)">
-<option value="laptop">Portátil</option>
-<option value="desktop">Computador Desktop</option>
-<option value="television">Televisão</option>
-<option value="air_conditioner">Ar Condicionado</option>
-<option value="refrigerator">Frigorífico</option>
-<option value="washing_machine">Máquina de Lavar Roupa</option>
-<option value="dishwasher">Máquina de Lavar Loiça</option>
-</optgroup>
-</select>
-</div>
-<div class="form-group" id="amountGroup">
-<label>Quantidade:</label>
-<input type="number" id="amount" step="0.01" placeholder="0">
-</div>
-<div class="form-group hidden" id="minutesGroup">
-<label>Minutos de Uso:</label>
-<input type="number" id="minutes" step="1" placeholder="0">
-</div>
-<button onclick="testCalculate()">Calcular Emissões</button>
-<div id="calcResult" class="result hidden"></div>
-</div>
+      <div class="section">
+        <h2>2. Testar API</h2>
+        <p>Teste o cálculo de emissões com a sua API Key:</p>
+        <div class="form-group">
+          <label>API Key:</label>
+          <input type="text" id="apiKey" placeholder="bgk_..." />
+        </div>
+        <div class="form-group">
+          <label>Tipo de Atividade:</label>
+          <select id="type" onchange="updateForm()">
+            <optgroup label=" Transportes">
+              <option value="car_gasoline">Carro a Gasolina (km)</option>
+              <option value="car_diesel">Carro a Diesel (km)</option>
+              <option value="car_electric">Carro Elétrico (km)</option>
+              <option value="bus">Autocarro (km)</option>
+              <option value="train">Comboio (km)</option>
+              <option value="plane_short">Avião Curta Distância (km)</option>
+              <option value="plane_long">Avião Longa Distância (km)</option>
+            </optgroup>
+            <optgroup label=" Energia">
+              <option value="electricity">Eletricidade (kWh)</option>
+              <option value="natural_gas">Gás Natural (m)</option>
+              <option value="heating_oil">Gasóleo de Aquecimento (L)</option>
+            </optgroup>
+            <optgroup label=" Alimentação">
+              <option value="meal_meat">Refeição com Carne</option>
+              <option value="meal_vegetarian">Refeição Vegetariana</option>
+              <option value="meal_vegan">Refeição Vegan</option>
+            </optgroup>
+            <optgroup label=" Resíduos">
+              <option value="waste_general">Lixo Geral (kg)</option>
+              <option value="waste_recycled">Reciclagem (kg)</option>
+              <option value="water">Água (L)</option>
+            </optgroup>
+            <optgroup label=" Dispositivos (por tempo de uso)">
+              <option value="laptop">Portátil</option>
+              <option value="desktop">Computador Desktop</option>
+              <option value="television">Televisão</option>
+              <option value="air_conditioner">Ar Condicionado</option>
+              <option value="refrigerator">Frigorífico</option>
+              <option value="washing_machine">Máquina de Lavar Roupa</option>
+              <option value="dishwasher">Máquina de Lavar Loiça</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group" id="amountGroup">
+          <label>Quantidade:</label>
+          <input type="number" id="amount" step="0.01" placeholder="0" />
+        </div>
+        <div class="form-group hidden" id="minutesGroup">
+          <label>Minutos de Uso:</label>
+          <input type="number" id="minutes" step="1" placeholder="0" />
+        </div>
+        <button onclick="testCalculate()">Calcular Emissões</button>
+        <div id="calcResult" class="result hidden"></div>
+      </div>
 
-<div class="section">
-<h2> 3. Documentação Completa</h2>
+      <div class="section">
+        <h2>3. Documentação Completa</h2>
 
-<h3>Endpoints Disponíveis</h3>
+        <h3>Endpoints Disponíveis</h3>
 
-<div class="endpoint">
-<span class="endpoint-method">POST</span><strong>/api/request-key</strong>
-<p>Criar ou recuperar API Key por email</p>
-<div class="code">
-// Request Body
-{
-  "email": "seu@email.com"
-}
+        <div class="endpoint">
+          <span class="endpoint-method">POST</span
+          ><strong>/api/request-key</strong>
+          <p>Criar ou recuperar API Key por email</p>
+          <div class="code">
+            // Request Body { "email": "seu@email.com" } // Response {
+            "success": true, "message": "API Key criada com sucesso", "data": {
+            "key": "bgk_a1b2c3d4...", "email": "seu@email.com", "createdAt":
+            "2026-01-04T12:00:00Z" } }
+          </div>
+        </div>
 
-// Response
-{
-  "success": true,
-  "message": "API Key criada com sucesso",
-  "data": {
-    "key": "bgk_a1b2c3d4...",
-    "email": "seu@email.com",
-    "createdAt": "2026-01-04T12:00:00Z"
-  }
-}</div>
-</div>
+        <div class="endpoint">
+          <span class="endpoint-method">POST</span
+          ><strong>/api/calculate</strong>
+          <p>Calcular emissões de carbono</p>
+          <p><span class="badge">Requer X-API-Key</span></p>
+          <div class="code">
+            // Headers obrigatórios X-API-Key: bgk_sua_key_aqui Content-Type:
+            application/json // Para atividades normais (km, kWh, kg, etc) {
+            "type": "car_gasoline", "amount": 100 } // Para dispositivos (por
+            tempo) { "type": "laptop", "minutes": 120 } // Response { "success":
+            true, "message": "Cálculo concluído", "data": { "type":
+            "car_gasoline", "amount": 100, "factor": 0.17, "carbon_kg_co2": 17,
+            "unit": "kg CO2e" } }
+          </div>
+        </div>
 
-<div class="endpoint">
-<span class="endpoint-method">POST</span><strong>/api/calculate</strong>
-<p>Calcular emissões de carbono</p>
-<p><span class="badge">Requer X-API-Key</span></p>
-<div class="code">
-// Headers obrigatórios
-X-API-Key: bgk_sua_key_aqui
-Content-Type: application/json
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span><strong>/api/info</strong>
+          <p>Informação sobre a API e tipos disponíveis</p>
+        </div>
 
-// Para atividades normais (km, kWh, kg, etc)
-{
-  "type": "car_gasoline",
-  "amount": 100
-}
+        <h3>Tipos de Atividades e Fatores</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Unidade</th>
+              <th>Factor CO2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>car_gasoline</td>
+              <td>Carro a Gasolina</td>
+              <td>km</td>
+              <td>0.17 kg</td>
+            </tr>
+            <tr>
+              <td>car_diesel</td>
+              <td>Carro a Diesel</td>
+              <td>km</td>
+              <td>0.185 kg</td>
+            </tr>
+            <tr>
+              <td>car_electric</td>
+              <td>Carro Elétrico</td>
+              <td>km</td>
+              <td>0.045 kg</td>
+            </tr>
+            <tr>
+              <td>bus</td>
+              <td>Autocarro</td>
+              <td>km</td>
+              <td>0.089 kg</td>
+            </tr>
+            <tr>
+              <td>train</td>
+              <td>Comboio</td>
+              <td>km</td>
+              <td>0.041 kg</td>
+            </tr>
+            <tr>
+              <td>plane_short</td>
+              <td>Avião Curta Distância</td>
+              <td>km</td>
+              <td>0.255 kg</td>
+            </tr>
+            <tr>
+              <td>plane_long</td>
+              <td>Avião Longa Distância</td>
+              <td>km</td>
+              <td>0.195 kg</td>
+            </tr>
+            <tr>
+              <td>electricity</td>
+              <td>Eletricidade</td>
+              <td>kWh</td>
+              <td>0.188 kg</td>
+            </tr>
+            <tr>
+              <td>natural_gas</td>
+              <td>Gás Natural</td>
+              <td>m</td>
+              <td>0.203 kg</td>
+            </tr>
+            <tr>
+              <td>heating_oil</td>
+              <td>Gasóleo de Aquecimento</td>
+              <td>L</td>
+              <td>0.265 kg</td>
+            </tr>
+            <tr>
+              <td>meal_meat</td>
+              <td>Refeição com Carne</td>
+              <td>unidade</td>
+              <td>7.2 kg</td>
+            </tr>
+            <tr>
+              <td>meal_vegetarian</td>
+              <td>Refeição Vegetariana</td>
+              <td>unidade</td>
+              <td>2.0 kg</td>
+            </tr>
+            <tr>
+              <td>meal_vegan</td>
+              <td>Refeição Vegan</td>
+              <td>unidade</td>
+              <td>1.5 kg</td>
+            </tr>
+            <tr>
+              <td>waste_general</td>
+              <td>Lixo Geral</td>
+              <td>kg</td>
+              <td>0.45 kg</td>
+            </tr>
+            <tr>
+              <td>waste_recycled</td>
+              <td>Reciclagem</td>
+              <td>kg</td>
+              <td>0.021 kg</td>
+            </tr>
+            <tr>
+              <td>water</td>
+              <td>Consumo de Água</td>
+              <td>L</td>
+              <td>0.149 kg</td>
+            </tr>
+          </tbody>
+        </table>
 
-// Para dispositivos (por tempo)
-{
-  "type": "laptop",
-  "minutes": 120
-}
+        <h3>Dispositivos (por tempo de uso)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Dispositivo</th>
+              <th>Potência Padrão</th>
+              <th>Como Usar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>laptop</td>
+              <td>50W</td>
+              <td>Especificar minutos de uso</td>
+            </tr>
+            <tr>
+              <td>desktop</td>
+              <td>200W</td>
+              <td>Especificar minutos de uso</td>
+            </tr>
+            <tr>
+              <td>television</td>
+              <td>150W</td>
+              <td>Especificar minutos de uso</td>
+            </tr>
+            <tr>
+              <td>air_conditioner</td>
+              <td>3500W</td>
+              <td>Especificar minutos de uso</td>
+            </tr>
+            <tr>
+              <td>refrigerator</td>
+              <td>150W</td>
+              <td>Especificar minutos de uso</td>
+            </tr>
+            <tr>
+              <td>washing_machine</td>
+              <td>500W</td>
+              <td>Especificar minutos de uso</td>
+            </tr>
+            <tr>
+              <td>dishwasher</td>
+              <td>1800W</td>
+              <td>Especificar minutos de uso</td>
+            </tr>
+          </tbody>
+        </table>
 
-// Response
-{
-  "success": true,
-  "message": "Cálculo concluído",
-  "data": {
-    "type": "car_gasoline",
-    "amount": 100,
-    "factor": 0.17,
-    "carbon_kg_co2": 17,
-    "unit": "kg CO2e"
-  }
-}</div>
-</div>
+        <h3>Exemplos de Integração</h3>
 
-<div class="endpoint">
-<span class="endpoint-method">GET</span><strong>/api/info</strong>
-<p>Informação sobre a API e tipos disponíveis</p>
-</div>
+        <h4>JavaScript (Fetch API)</h4>
+        <div class="code">
+          // Obter API Key fetch('/api/request-key', { method: 'POST', headers:
+          {'Content-Type': 'application/json'}, body: JSON.stringify({email:
+          'seu@email.com'}) }) .then(r => r.json()) .then(data =>
+          console.log(data.data.key)); // Calcular emissões
+          fetch('/api/calculate', { method: 'POST', headers: { 'Content-Type':
+          'application/json', 'X-API-Key': 'bgk_sua_key' }, body:
+          JSON.stringify({ type: 'car_gasoline', amount: 50 }) }) .then(r =>
+          r.json()) .then(data => console.log(data.data.carbon_kg_co2 + ' kg
+          CO2'));
+        </div>
 
-<h3>Tipos de Atividades e Fatores</h3>
-<table>
-<thead>
-<tr>
-<th>Tipo</th>
-<th>Descrição</th>
-<th>Unidade</th>
-<th>Factor CO2</th>
-</tr>
-</thead>
-<tbody>
-<tr><td>car_gasoline</td><td>Carro a Gasolina</td><td>km</td><td>0.17 kg</td></tr>
-<tr><td>car_diesel</td><td>Carro a Diesel</td><td>km</td><td>0.185 kg</td></tr>
-<tr><td>car_electric</td><td>Carro Elétrico</td><td>km</td><td>0.045 kg</td></tr>
-<tr><td>bus</td><td>Autocarro</td><td>km</td><td>0.089 kg</td></tr>
-<tr><td>train</td><td>Comboio</td><td>km</td><td>0.041 kg</td></tr>
-<tr><td>plane_short</td><td>Avião Curta Distância</td><td>km</td><td>0.255 kg</td></tr>
-<tr><td>plane_long</td><td>Avião Longa Distância</td><td>km</td><td>0.195 kg</td></tr>
-<tr><td>electricity</td><td>Eletricidade</td><td>kWh</td><td>0.188 kg</td></tr>
-<tr><td>natural_gas</td><td>Gás Natural</td><td>m</td><td>0.203 kg</td></tr>
-<tr><td>heating_oil</td><td>Gasóleo de Aquecimento</td><td>L</td><td>0.265 kg</td></tr>
-<tr><td>meal_meat</td><td>Refeição com Carne</td><td>unidade</td><td>7.2 kg</td></tr>
-<tr><td>meal_vegetarian</td><td>Refeição Vegetariana</td><td>unidade</td><td>2.0 kg</td></tr>
-<tr><td>meal_vegan</td><td>Refeição Vegan</td><td>unidade</td><td>1.5 kg</td></tr>
-<tr><td>waste_general</td><td>Lixo Geral</td><td>kg</td><td>0.45 kg</td></tr>
-<tr><td>waste_recycled</td><td>Reciclagem</td><td>kg</td><td>0.021 kg</td></tr>
-<tr><td>water</td><td>Consumo de Água</td><td>L</td><td>0.149 kg</td></tr>
-</tbody>
-</table>
+        <h4>cURL</h4>
+        <div class="code">
+          # Obter API Key curl -X POST
+          https://www.antonioamorim.pt/api/request-key \ -H "Content-Type:
+          application/json" \ -d '{"email":"seu@email.com"}' # Calcular emissões
+          curl -X POST https://www.antonioamorim.pt/api/calculate \ -H
+          "Content-Type: application/json" \ -H "X-API-Key: bgk_sua_key" \ -d
+          '{"type":"electricity","amount":100}'
+        </div>
 
-<h3>Dispositivos (por tempo de uso)</h3>
-<table>
-<thead>
-<tr>
-<th>Dispositivo</th>
-<th>Potência Padrão</th>
-<th>Como Usar</th>
-</tr>
-</thead>
-<tbody>
-<tr><td>laptop</td><td>50W</td><td>Especificar minutos de uso</td></tr>
-<tr><td>desktop</td><td>200W</td><td>Especificar minutos de uso</td></tr>
-<tr><td>television</td><td>150W</td><td>Especificar minutos de uso</td></tr>
-<tr><td>air_conditioner</td><td>3500W</td><td>Especificar minutos de uso</td></tr>
-<tr><td>refrigerator</td><td>150W</td><td>Especificar minutos de uso</td></tr>
-<tr><td>washing_machine</td><td>500W</td><td>Especificar minutos de uso</td></tr>
-<tr><td>dishwasher</td><td>1800W</td><td>Especificar minutos de uso</td></tr>
-</tbody>
-</table>
+        <h4>Python</h4>
+        <div class="code">
+          import requests # Obter API Key response =
+          requests.post('https://www.antonioamorim.pt/api/request-key',
+          json={'email': 'seu@email.com'}) api_key =
+          response.json()['data']['key'] # Calcular emissões response =
+          requests.post('https://www.antonioamorim.pt/api/calculate',
+          headers={'X-API-Key': api_key}, json={'type': 'train', 'amount': 200})
+          print(f"{response.json()['data']['carbon_kg_co2']} kg CO2")
+        </div>
 
-<h3>Exemplos de Integração</h3>
+        <h3>Limites e Restrições</h3>
+        <ul>
+          <li>
+            <strong>Rate Limit:</strong> 100 pedidos por 15 minutos por API Key
+          </li>
+          <li>
+            <strong>Autenticação:</strong> Todas as chamadas ao /api/calculate
+            requerem header X-API-Key
+          </li>
+          <li>
+            <strong>Email:</strong> Uma API Key por email (duplicados retornam a
+            key existente)
+          </li>
+          <li>
+            <strong>Bloqueio:</strong> Keys podem ser bloqueadas pelo admin
+          </li>
+          <li>
+            <strong>Tracking:</strong> Cada pedido incrementa o contador da key
+          </li>
+        </ul>
 
-<h4>JavaScript (Fetch API)</h4>
-<div class="code">
-// Obter API Key
-fetch('/api/request-key', {
-  method: 'POST',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify({email: 'seu@email.com'})
-})
-.then(r => r.json())
-.then(data => console.log(data.data.key));
+        <h3>Códigos de Resposta HTTP</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Significado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>200</td>
+              <td>Sucesso</td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td>Pedido inválido (campos em falta ou incorretos)</td>
+            </tr>
+            <tr>
+              <td>401</td>
+              <td>API Key em falta ou inválida</td>
+            </tr>
+            <tr>
+              <td>403</td>
+              <td>API Key bloqueada</td>
+            </tr>
+            <tr>
+              <td>404</td>
+              <td>Recurso não encontrado</td>
+            </tr>
+            <tr>
+              <td>429</td>
+              <td>Limite de pedidos excedido</td>
+            </tr>
+            <tr>
+              <td>500</td>
+              <td>Erro interno do servidor</td>
+            </tr>
+          </tbody>
+        </table>
 
-// Calcular emissões
-fetch('/api/calculate', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-API-Key': 'bgk_sua_key'
-  },
-  body: JSON.stringify({
-    type: 'car_gasoline',
-    amount: 50
-  })
-})
-.then(r => r.json())
-.then(data => console.log(data.data.carbon_kg_co2 + ' kg CO2'));
-</div>
+        <h3>Painel de Administração</h3>
+        <p>
+          Acesso ao painel admin para gestão de keys:
+          <a href="/api/admin.html">/api/admin.html</a>
+        </p>
+        <p>Password padrão: <code>bgreen2026</code> (alterar em produção)</p>
+      </div>
+    </div>
 
-<h4>cURL</h4>
-<div class="code">
-# Obter API Key
-curl -X POST https://www.antonioamorim.pt/api/request-key \
-  -H "Content-Type: application/json" \
-  -d '{"email":"seu@email.com"}'
+    <script>
+      async function requestKey() {
+        const email = document.getElementById("email").value;
+        if (!email.includes("@")) return alert("Email inválido");
+        try {
+          const r = await fetch("/api/request-key", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const d = await r.json();
+          if (d.success) {
+            document.getElementById(
+              "keyResult"
+            ).innerHTML = `<strong> Sucesso!</strong>\n\n<strong>API Key:</strong> ${
+              d.data.key
+            }\n<strong>Email:</strong> ${
+              d.data.email
+            }\n<strong>Criada em:</strong> ${new Date(
+              d.data.createdAt
+            ).toLocaleString()}\n<strong>Pedidos:</strong> ${
+              d.data.requests || 0
+            }\n\n <em>Copie a key acima e use no teste abaixo</em>`;
+            document.getElementById("keyResult").classList.remove("hidden");
+            document.getElementById("apiKey").value = d.data.key;
+          } else alert(" " + d.error);
+        } catch (e) {
+          alert(" Erro: " + e.message);
+        }
+      }
 
-# Calcular emissões
-curl -X POST https://www.antonioamorim.pt/api/calculate \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: bgk_sua_key" \
-  -d '{"type":"electricity","amount":100}'
-</div>
+      async function testCalculate() {
+        const key = document.getElementById("apiKey").value;
+        const type = document.getElementById("type").value;
+        const isDevice = [
+          "laptop",
+          "desktop",
+          "television",
+          "air_conditioner",
+          "refrigerator",
+          "washing_machine",
+          "dishwasher",
+        ].includes(type);
+        let body = { type };
+        if (isDevice) {
+          body.minutes =
+            parseInt(document.getElementById("minutes").value) || 0;
+        } else {
+          body.amount =
+            parseFloat(document.getElementById("amount").value) || 0;
+        }
+        try {
+          const r = await fetch("/api/calculate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-API-Key": key },
+            body: JSON.stringify(body),
+          });
+          const d = await r.json();
+          if (d.success) {
+            const data = d.data;
+            let result = `<strong> Cálculo Concluído</strong>\n\n`;
+            result += `<strong>Tipo:</strong> ${data.type}\n`;
+            if (data.amount)
+              result += `<strong>Quantidade:</strong> ${data.amount}\n`;
+            if (data.minutes)
+              result += `<strong>Minutos:</strong> ${data.minutes}\n`;
+            if (data.kwh)
+              result += `<strong>Consumo:</strong> ${data.kwh} kWh\n`;
+            if (data.factor)
+              result += `<strong>Fator:</strong> ${data.factor} kg CO2/unidade\n`;
+            result += `\n<strong> EMISSÕES CO2:</strong> ${data.carbon_kg_co2} kg CO2e`;
+            document.getElementById("calcResult").innerHTML = result;
+            document.getElementById("calcResult").classList.remove("hidden");
+          } else alert(" " + d.error);
+        } catch (e) {
+          alert(" Erro: " + e.message);
+        }
+      }
 
-<h4>Python</h4>
-<div class="code">
-import requests
-
-# Obter API Key
-response = requests.post('https://www.antonioamorim.pt/api/request-key',
-    json={'email': 'seu@email.com'})
-api_key = response.json()['data']['key']
-
-# Calcular emissões
-response = requests.post('https://www.antonioamorim.pt/api/calculate',
-    headers={'X-API-Key': api_key},
-    json={'type': 'train', 'amount': 200})
-print(f"{response.json()['data']['carbon_kg_co2']} kg CO2")
-</div>
-
-<h3>Limites e Restrições</h3>
-<ul>
-<li><strong>Rate Limit:</strong> 100 pedidos por 15 minutos por API Key</li>
-<li><strong>Autenticação:</strong> Todas as chamadas ao /api/calculate requerem header X-API-Key</li>
-<li><strong>Email:</strong> Uma API Key por email (duplicados retornam a key existente)</li>
-<li><strong>Bloqueio:</strong> Keys podem ser bloqueadas pelo admin</li>
-<li><strong>Tracking:</strong> Cada pedido incrementa o contador da key</li>
-</ul>
-
-<h3>Códigos de Resposta HTTP</h3>
-<table>
-<thead>
-<tr><th>Código</th><th>Significado</th></tr>
-</thead>
-<tbody>
-<tr><td>200</td><td>Sucesso</td></tr>
-<tr><td>400</td><td>Pedido inválido (campos em falta ou incorretos)</td></tr>
-<tr><td>401</td><td>API Key em falta ou inválida</td></tr>
-<tr><td>403</td><td>API Key bloqueada</td></tr>
-<tr><td>404</td><td>Recurso não encontrado</td></tr>
-<tr><td>429</td><td>Limite de pedidos excedido</td></tr>
-<tr><td>500</td><td>Erro interno do servidor</td></tr>
-</tbody>
-</table>
-
-<h3>Painel de Administração</h3>
-<p>Acesso ao painel admin para gestão de keys: <a href="/admin.html">/admin.html</a></p>
-<p>Password padrão: <code>bgreen2026</code> (alterar em produção)</p>
-
-</div>
-</div>
-
-<script>
-async function requestKey(){
-const email=document.getElementById('email').value;
-if(!email.includes('@'))return alert('Email inválido');
-try{
-const r=await fetch('/api/request-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
-const d=await r.json();
-if(d.success){
-document.getElementById('keyResult').innerHTML=`<strong> Sucesso!</strong>\n\n<strong>API Key:</strong> ${d.data.key}\n<strong>Email:</strong> ${d.data.email}\n<strong>Criada em:</strong> ${new Date(d.data.createdAt).toLocaleString()}\n<strong>Pedidos:</strong> ${d.data.requests||0}\n\n <em>Copie a key acima e use no teste abaixo</em>`;
-document.getElementById('keyResult').classList.remove('hidden');
-document.getElementById('apiKey').value=d.data.key;
-}else alert(' '+d.error);
-}catch(e){alert(' Erro: '+e.message)}}
-
-async function testCalculate(){
-const key=document.getElementById('apiKey').value;
-const type=document.getElementById('type').value;
-const isDevice=['laptop','desktop','television','air_conditioner','refrigerator','washing_machine','dishwasher'].includes(type);
-let body={type};
-if(isDevice){
-body.minutes=parseInt(document.getElementById('minutes').value)||0;
-}else{
-body.amount=parseFloat(document.getElementById('amount').value)||0;
-}
-try{
-const r=await fetch('/api/calculate',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':key},body:JSON.stringify(body)});
-const d=await r.json();
-if(d.success){
-const data=d.data;
-let result=`<strong> Cálculo Concluído</strong>\n\n`;
-result+=`<strong>Tipo:</strong> ${data.type}\n`;
-if(data.amount)result+=`<strong>Quantidade:</strong> ${data.amount}\n`;
-if(data.minutes)result+=`<strong>Minutos:</strong> ${data.minutes}\n`;
-if(data.kwh)result+=`<strong>Consumo:</strong> ${data.kwh} kWh\n`;
-if(data.factor)result+=`<strong>Fator:</strong> ${data.factor} kg CO2/unidade\n`;
-result+=`\n<strong> EMISSÕES CO2:</strong> ${data.carbon_kg_co2} kg CO2e`;
-document.getElementById('calcResult').innerHTML=result;
-document.getElementById('calcResult').classList.remove('hidden');
-}else alert(' '+d.error);
-}catch(e){alert(' Erro: '+e.message)}}
-
-function updateForm(){
-const type=document.getElementById('type').value;
-const isDevice=['laptop','desktop','television','air_conditioner','refrigerator','washing_machine','dishwasher'].includes(type);
-document.getElementById('amountGroup').classList.toggle('hidden',isDevice);
-document.getElementById('minutesGroup').classList.toggle('hidden',!isDevice);
-}
-</script>
-</body>
+      function updateForm() {
+        const type = document.getElementById("type").value;
+        const isDevice = [
+          "laptop",
+          "desktop",
+          "television",
+          "air_conditioner",
+          "refrigerator",
+          "washing_machine",
+          "dishwasher",
+        ].includes(type);
+        document
+          .getElementById("amountGroup")
+          .classList.toggle("hidden", isDevice);
+        document
+          .getElementById("minutesGroup")
+          .classList.toggle("hidden", !isDevice);
+      }
+    </script>
+  </body>
 </html>

@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>b.green API - Admin</title>
+    <style>
+      :root {
+        --green-primary: #8cb161;
+        --green-secondary: #426934;
+        --green-dark: #234736;
+        --green-light: #e5eda0;
+        --text-dark: #1c1917;
+        --text-medium: #253f1d;
+        --border: #e7e5e4;
+        --bg: #ffffff;
+        --input-bg: #f5f5f4;
+        --red: #ef4444;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text-dark);
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--green-secondary),
+          var(--green-primary)
+        );
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      input {
+        padding: 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--input-bg);
+        font-size: 1rem;
+        margin: 0.5rem 0;
+      }
+      input:focus {
+        outline: none;
+        border-color: var(--green-primary);
+      }
+      button {
+        padding: 0.6rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button.primary {
+        background: var(--green-primary);
+        color: white;
+      }
+      button.danger {
+        background: var(--red);
+        color: white;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .login-box {
+        max-width: 400px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      th,
+      td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        background: var(--green-dark);
+        color: white;
+        font-weight: 600;
+      }
+      td {
+        font-size: 0.9rem;
+      }
+      .blocked {
+        color: var(--red);
+        font-weight: 600;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--green-primary);
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loginView">
+      <div class="login-box">
+        <h2>Admin Login</h2>
+        <input
+          type="password"
+          id="password"
+          placeholder="Password"
+        /><br /><button class="primary" onclick="login()">Entrar</button>
+      </div>
+    </div>
+    <div id="adminView" class="hidden">
+      <div class="container">
+        <header>
+          <h1>b.green API - Painel Admin</h1>
+          <button class="danger" onclick="logout()" style="float: right">
+            Sair
+          </button>
+        </header>
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-value" id="totalKeys">0</div>
+            <div>Total de Keys</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="activeKeys">0</div>
+            <div>Keys Ativas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalRequests">0</div>
+            <div>Total de Pedidos</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Key</th>
+              <th>Criada</th>
+              <th>Pedidos</th>
+              <th>Último Uso</th>
+              <th>Estado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="keysTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+      let adminPassword = "";
+      async function login() {
+        adminPassword = document.getElementById("password").value;
+        try {
+          const r = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: { "X-Admin-Password": adminPassword },
+          });
+          const d = await r.json();
+          if (d.success) {
+            document.getElementById("loginView").classList.add("hidden");
+            document.getElementById("adminView").classList.remove("hidden");
+            loadKeys();
+          } else alert("Password incorreta");
+        } catch (e) {
+          alert("Erro: " + e.message);
+        }
+      }
+      function logout() {
+        adminPassword = "";
+        document.getElementById("loginView").classList.remove("hidden");
+        document.getElementById("adminView").classList.add("hidden");
+      }
+      async function loadKeys() {
+        try {
+          const r = await fetch("/api/admin/keys", {
+            headers: { "X-Admin-Password": adminPassword },
+          });
+          const d = await r.json();
+          if (!d.success) return alert(d.error);
+          const keys = d.data;
+          let totalReqs = 0,
+            active = 0;
+          keys.forEach((k) => {
+            totalReqs += k.requests || 0;
+            if (!k.blocked) active++;
+          });
+          document.getElementById("totalKeys").textContent = keys.length;
+          document.getElementById("activeKeys").textContent = active;
+          document.getElementById("totalRequests").textContent = totalReqs;
+          const tbody = document.getElementById("keysTable");
+          tbody.innerHTML = keys
+            .map(
+              (k) =>
+                `<tr><td>${k.email}</td><td>${k.key.substr(
+                  0,
+                  20
+                )}...</td><td>${new Date(
+                  k.createdAt
+                ).toLocaleDateString()}</td><td>${k.requests || 0}</td><td>${
+                  k.lastUsed ? new Date(k.lastUsed).toLocaleString() : "Nunca"
+                }</td><td class="${k.blocked ? "blocked" : ""}">${
+                  k.blocked ? "BLOQUEADA" : "Ativa"
+                }</td><td><button class="primary" onclick="toggleBlock('${
+                  k.key
+                }',${k.blocked})">${
+                  k.blocked ? "Desbloquear" : "Bloquear"
+                }</button> <button class="danger" onclick="deleteKey('${
+                  k.key
+                }')">Eliminar</button></td></tr>`
+            )
+            .join("");
+        } catch (e) {
+          alert("Erro: " + e.message);
+        }
+      }
+      async function toggleBlock(key, blocked) {
+        try {
+          const r = await fetch(`/api/admin/keys/${key}/block`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Admin-Password": adminPassword,
+            },
+            body: JSON.stringify({ blocked: !blocked }),
+          });
+          const d = await r.json();
+          if (d.success) loadKeys();
+          else alert(d.error);
+        } catch (e) {
+          alert("Erro: " + e.message);
+        }
+      }
+      async function deleteKey(key) {
+        if (!confirm("Eliminar esta key?")) return;
+        try {
+          const r = await fetch(`/api/admin/keys/${key}`, {
+            method: "DELETE",
+            headers: { "X-Admin-Password": adminPassword },
+          });
+          const d = await r.json();
+          if (d.success) loadKeys();
+          else alert(d.error);
+        } catch (e) {
+          alert("Erro: " + e.message);
+        }
+      }
+    </script>
+  </body>
+</html>
