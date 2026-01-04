@@ -6,12 +6,12 @@
  */
 require_once 'config.php';
 require_once 'functions.php';
-// Autenticação por token
-$headers = getallheaders();
-$token = $headers['Authorization'] ?? '';
-if ($token !== ADMIN_TOKEN) {
-    sendError(401, 'Token de admin inválido');
+
+// Autenticação de admin (via password no header)
+if (!authenticateAdmin()) {
+    exit();
 }
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $keys = loadApiKeys();
     sendSuccess('Lista de API Keys', ['keys' => $keys]);

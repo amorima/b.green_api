@@ -1,163 +1,122 @@
-# b.green API
+# b.green API 🌿
 
-API REST para cálculo de emissões de carbono de atividades quotidianas.
+API REST desenvolvida em PHP para cálculo de pegada ecológica e emissões de carbono de atividades quotidianas. Inclui um sistema de gestão de API Keys e um painel de administração.
 
-## Stack Tecnológica
+## 🚀 Funcionalidades
+
+- **Cálculo de Emissões:** Suporte para transportes, energia, alimentação, resíduos e dispositivos eletrónicos.
+- **Gestão de API Keys:** Sistema de autenticação via chave, com registo por email.
+- **Admin Panel:** Interface web para gestão, bloqueio e monitorização de chaves de API.
+- **Segurança:** Proteção de ficheiros de dados, validação de inputs e autenticação via Headers.
+- **Sem Base de Dados SQL:** Utiliza ficheiros JSON para persistência de dados, facilitando o deploy simples.
+
+## 🛠️ Stack Tecnológica
 
 - **Backend:** PHP 7.4+
 - **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
-- **Base de Dados:** JSON (ficheiro local)
-- **Servidor:** Apache com mod_rewrite
+- **Armazenamento:** JSON (`data/api-keys.json`)
+- **Servidor:** Apache (com `.htaccess` para routing)
 
-## Características
+## 📦 Instalação e Configuração
 
-- Cálculo de emissões para 16 tipos de atividades
-- Sistema de API Keys por email (uma key por email)
-- Rate limiting (100 requests/15min por key)
-- Painel de administração para gestão de keys
-- Documentação interativa completa
-- Tracking de uso por API Key
-- Bloqueio/desbloqueio de keys via admin
+1. **Requisitos:** Servidor Apache com PHP e `mod_rewrite` ativo (ex: XAMPP, MAMP, Laragon).
+2. **Setup:**
+   - Coloque os ficheiros na pasta pública do servidor (ex: `htdocs` ou `www`).
+   - Certifique-se que a pasta `data/` tem permissões de escrita.
+3. **Acesso:**
+   - Abra o browser em `http://localhost/b.green_api/` (ou o caminho correspondente).
 
-## Tipos de Atividades Suportados
+## 📚 Documentação da API
 
-### Transportes
+### 1. Solicitar API Key
+Gera uma nova chave de acesso associada a um email.
 
-- Carro (gasolina, diesel, elétrico), autocarro, comboio, avião
+- **Endpoint:** `POST /request-key`
+- **Body (JSON):**
+  ```json
+  {
+    "email": "user@example.com"
+  }
+  ```
+- **Resposta:**
+  ```json
+  {
+    "success": true,
+    "message": "API Key criada com sucesso",
+    "data": {
+      "key": "bgk_...",
+      "email": "user@example.com"
+    }
+  }
+  ```
 
-### Energia
+### 2. Calcular Emissões
+Realiza o cálculo de CO2e com base no tipo de atividade.
 
-- Eletricidade, gás natural, gasóleo de aquecimento
+- **Endpoint:** `POST /calculate`
+- **Headers:**
+  - `X-API-Key`: `sua_api_key_aqui`
+- **Body (JSON) - Exemplo Genérico:**
+  ```json
+  {
+    "type": "car_gasoline",
+    "amount": 100
+  }
+  ```
+- **Body (JSON) - Exemplo Dispositivos:**
+  ```json
+  {
+    "type": "laptop",
+    "minutes": 60
+  }
+  ```
+- **Tipos Suportados (`type`):**
+  - **Transportes:** `car_gasoline`, `car_diesel`, `car_electric`, `bus`, `train`, `plane_short`, `plane_long`
+  - **Energia:** `electricity`, `natural_gas`, `heating_oil`
+  - **Alimentação:** `meal_meat`, `meal_vegetarian`, `meal_vegan`
+  - **Resíduos:** `waste_general`, `waste_recycled`, `water`
+  - **Dispositivos (usar `minutes`):** `laptop`, `desktop`, `television`, `air_conditioner`, `refrigerator`, `washing_machine`, `dishwasher`
 
-### Alimentação
+### 3. Informações da API
+- **Endpoint:** `GET /info`
+- **Resposta:** Detalhes sobre a versão e autor.
 
-- Refeições (carne, vegetariana, vegan)
+## 🔐 Painel de Administração
 
-### Resíduos
+Acesse a `/admin.html` para gerir as chaves.
 
-- Lixo geral, reciclagem, consumo de água
+- **Password Padrão:** `admin123`
+- **Funcionalidades:**
+  - Visualizar todas as chaves geradas.
+  - Ver estatísticas de uso (número de pedidos, último acesso).
+  - Bloquear/Desbloquear chaves.
+  - Eliminar chaves.
 
-### Dispositivos (por tempo de uso)
-
-- Portátil, desktop, TV, ar condicionado, frigorífico, máquinas de lavar
-
-## Instalação Local (PHP)
-
-```bash
-# Clonar repositório
-git clone https://github.com/amorima/b.green_api.git
-cd b.green_api
-
-# Iniciar servidor PHP local
-php -S localhost:8000
-```
-
-A API estará disponível em `http://localhost:8000`
-
-## Documentação
-
-Aceda a `/` ou `/public/index.html` para ver:
-
-- Guia de obtenção de API Key
-- Teste interativo da API
-- Documentação completa de todos os endpoints
-- Tabelas com fatores de emissão
-- Exemplos de código (JavaScript, cURL, Python)
-- Códigos de resposta HTTP
-
-## Endpoints da API
-
-### Públicos
-
-- `POST /api/request-key` - Criar ou recuperar API Key por email
-- `GET /api/info` - Informação sobre tipos e dispositivos disponíveis
-
-### Autenticados (X-API-Key)
-
-- `POST /api/calculate` - Calcular emissões de carbono
-
-### Admin (X-Admin-Password)
-
-- `POST /admin/login` - Autenticação admin
-- `GET /admin/keys` - Listar todas as API Keys
-- `PUT /admin/keys/{key}/block` - Bloquear/desbloquear key
-- `DELETE /admin/keys/{key}` - Eliminar key
-
-## Exemplo de Uso
-
-### Obter API Key
-
-```bash
-curl -X POST https://www.antonioamorim.pt/api/request-key \
-  -H "Content-Type: application/json" \
-  -d '{"email":"seu@email.com"}'
-```
-
-### Calcular Emissões
-
-```bash
-curl -X POST https://www.antonioamorim.pt/api/calculate \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: bgk_sua_key" \
-  -d '{"type":"car_gasoline","amount":100}'
-```
-
-## Painel Admin
-
-Aceda a `/admin.html` para:
-
-- Ver todas as API Keys registadas
-- Visualizar estatísticas (total keys, keys ativas, total pedidos)
-- Bloquear/desbloquear keys
-- Eliminar keys
-- Ver último uso e contagem de pedidos por key
-
-**Password padrão:** `bgreen2026` (alterar em produção no ficheiro `api/config.php`)
-
-## Deploy em Servidor PHP
-
-Ver [DEPLOY.md](DEPLOY.md) para instruções detalhadas de:
-
-- Upload de ficheiros via cPanel
-- Configuração de permissões
-- Configuração do .htaccess
-- Alteração da password de admin
-- Resolução de problemas comuns
-
-## Segurança
-
-- API Keys únicas por email
-- Autenticação obrigatória para cálculos
-- Admin protegido por password
-- Rate limiting por key
-- Logs de uso (requests, lastUsed)
-- Possibilidade de bloqueio de keys
-
-## Estrutura do Projeto
+## 📂 Estrutura do Projeto
 
 ```
-b.green_api/
-├── .htaccess           # Apache rewrite rules
-├── api/                # Backend PHP
-│   ├── config.php      # Configuração e constantes
-│   ├── functions.php   # Funções auxiliares
-│   ├── request-key.php # Endpoint: criar/obter key
-│   ├── calculate.php   # Endpoint: calcular emissões
-│   ├── admin-login.php # Endpoint: login admin
-│   ├── admin-keys.php  # Endpoint: gestão de keys
-│   └── info.php        # Endpoint: informação API
-├── data/               # Base de dados JSON
-│   └── api-keys.json   # Armazenamento de keys
-├── public/             # Frontend
-│   ├── index.html      # Página principal + docs
-│   └── admin.html      # Painel de administração
-├── DEPLOY.md           # Guia de deploy
-└── readme.md           # Este ficheiro
+/
+├── data/               # Armazenamento de dados (protegido)
+│   └── api-keys.json   # Base de dados de chaves
+├── public/             # (Opcional) Ficheiros públicos antigos
+├── .htaccess           # Regras de reescrita e segurança
+├── admin.html          # Frontend do Painel Admin
+├── admin-keys.php      # API para gestão de chaves
+├── admin-login.php     # API para login de admin
+├── calculate.php       # Lógica de cálculo de emissões
+├── config.php          # Configurações globais (senhas, caminhos)
+├── functions.php       # Funções auxiliares (helpers)
+├── index.html          # Landing page e documentação interativa
+├── info.php            # Endpoint de informações
+├── request-key.php     # Endpoint de registo
+└── readme.md           # Documentação do projeto
 ```
 
-## Autor
+## 🛡️ Segurança
 
-António Amorim
+- O acesso direto à pasta `data/` e ficheiros `.json` é bloqueado via `.htaccess`.
+- As rotas da API são geridas via `RewriteRule` para URLs limpos.
+- Autenticação de Admin feita via Header `X-Admin-Password`.
 
-- Website: https://www.antonioamorim.pt
-- GitHub: https://github.com/amorima
+---
+Desenvolvido no âmbito da disciplina de Programação Web I.
