@@ -11,8 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendError(405, 'Método não permitido');
 }
 
-$headers = getallheaders();
-$key = $headers['X-API-Key'] ?? $headers['x-api-key'] ?? null;
+$key = null;
+if (function_exists('getallheaders')) {
+    $headers = getallheaders();
+    $key = $headers['X-API-Key'] ?? $headers['x-api-key'] ?? null;
+}
+if (!$key) {
+    $key = $_SERVER['HTTP_X_API_KEY'] ?? null;
+}
 
 if (!$key) {
     sendError(401, 'API Key obrigatória. Use header X-API-Key');
