@@ -1,12 +1,19 @@
 
-node_modules/
+# Dados sensíveis
+data/api-keys.json
 .env
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+
+# Logs
 logs/
 *.log
+
+# Sistema operativo
 .DS_Store
 Thumbs.db
+
+# IDEs
 .vscode/
 .idea/
+
+# Cache PHP
+*.cache

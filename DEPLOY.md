@@ -1,99 +1,122 @@
-# 📋 Guia de Deploy - b.green API
+# Deploy b.green API (PHP)
 
-## Pré-requisitos
+## Requisitos
 
-- Node.js 18+ instalado
-- Acesso SSH ao servidor cPanel
-- Domínio configurado: https://www.antonioamorim.pt/api
-
-## Passo 1: Upload dos Ficheiros
-
-1. Aceda ao File Manager do cPanel
-2. Navegue para `public_html/api/`
-3. Faça upload dos ficheiros:
-   - server.js
-   - package.json
-   - pasta `public/` (index.html, admin.html)
-   - pasta `data/` (api-keys.json)
-   - pasta `admin/` (ficheiros admin)
-
-## Passo 2: Instalar Dependências
-
-Via terminal SSH:
-
-```bash
-cd ~/public_html/api
-npm install
-```
-
-## Passo 3: Configurar Node.js Application (cPanel)
-
-1. Aceda a "Setup Node.js App" no cPanel
-2. Configurações:
-
-   - **Nome:** bgreen-api
-   - **Versão Node.js:** 18.x ou superior
-   - **Modo:** Production
-   - **Application root:** public_html/api
-   - **Application URL:** api (ou deixar vazio)
-   - **Application startup file:** server.js
-   - **Porta:** (gerada automaticamente, ex: 3000)
-
-3. Clique em "Create"
-
-## Passo 4: Iniciar Aplicação
-
-```bash
-cd ~/public_html/api
-pm2 start server.js --name "bgreen-api"
-pm2 save
-pm2 startup
-```
-
-## Passo 5: Testar
-
-Aceda a:
-
-- **API:** https://www.antonioamorim.pt/api/api/calculate
-- **Interface:** https://www.antonioamorim.pt/api/
-- **Admin:** https://www.antonioamorim.pt/api/admin.html
-
-## Comandos Úteis
-
-```bash
-# Ver logs
-pm2 logs bgreen-api
-
-# Reiniciar
-pm2 restart bgreen-api
-
-# Parar
-pm2 stop bgreen-api
-
-# Status
-pm2 status
-```
+- Servidor com PHP 7.4 ou superior
+- mod_rewrite ativado (Apache)
+- Acesso SSH ou cPanel File Manager
 
 ## Estrutura de Ficheiros
 
 ```
-public_html/api/
-├── server.js           # Backend principal
-├── package.json        # Dependências
-├── public/             # Frontend
-│   ├── index.html      # Interface principal
-│   └── admin.html      # Painel admin
-└── data/               # Base de dados
-    └── api-keys.json   # Keys + emails + requests
+b.green_api/
+├── .htaccess           # Rewrite rules
+├── api/                # Backend PHP
+│   ├── config.php
+│   ├── functions.php
+│   ├── request-key.php
+│   ├── calculate.php
+│   ├── admin-login.php
+│   ├── admin-keys.php
+│   └── info.php
+├── data/               # Base de dados JSON
+│   └── api-keys.json
+└── public/             # Frontend
+    ├── index.html
+    └── admin.html
 ```
 
-## Segurança
+## Passos para Deploy
 
-- API Keys são obrigatórias para todos os pedidos
-- Pedidos limitados a 100/15min por key
-- Keys bloqueadas não podem fazer pedidos
-- Admin password: definir em `server.js` (linha 15)
+### 1. Upload dos Ficheiros
+
+- Aceda ao cPanel → File Manager
+- Navegue até `public_html` (ou `www`)
+- Crie a pasta `api` se não existir
+- Faça upload de todos os ficheiros mantendo a estrutura acima
+
+### 2. Configurar Permissões
+
+```bash
+chmod 755 api/
+chmod 644 api/*.php
+chmod 755 data/
+chmod 666 data/api-keys.json
+```
+
+Ou via cPanel File Manager:
+
+- Pasta `data/`: 755
+- Ficheiro `api-keys.json`: 666 (read/write)
+- Ficheiros PHP: 644
+
+### 3. Verificar .htaccess
+
+O ficheiro `.htaccess` deve estar na raiz do projeto com:
+
+```apache
+RewriteEngine On
+RewriteBase /api/
+
+# API Routes
+RewriteRule ^api/request-key/?$ api/request-key.php [L]
+RewriteRule ^api/calculate/?$ api/calculate.php [L]
+RewriteRule ^api/info/?$ api/info.php [L]
+
+# Admin Routes
+RewriteRule ^admin/login/?$ api/admin-login.php [L]
+RewriteRule ^admin/keys/?$ api/admin-keys.php [QSA,L]
+```
+
+### 4. Configurar Segurança
+
+Edite `api/config.php` e altere:
+
+```php
+define('ADMIN_PASSWORD', 'NOVA_PASSWORD_SEGURA');
+```
+
+### 5. Testar API
+
+Aceda a:
+
+- `https://www.antonioamorim.pt/api/` → Index.html
+- `https://www.antonioamorim.pt/api/info` → Informação da API
+- `https://www.antonioamorim.pt/admin.html` → Painel admin
+
+## Resolução de Problemas
+
+### Erro 500
+
+- Verificar permissões dos ficheiros
+- Verificar se mod_rewrite está ativado
+- Ver logs: cPanel → Errors
+
+### API Keys não guardam
+
+- Verificar permissões da pasta `data/`
+- Verificar se `api-keys.json` tem permissão 666
+
+### CORS Errors
+
+Os headers já estão configurados em `config.php`. Se persistir erro:
+
+- Adicionar ao `.htaccess`:
+
+```apache
+Header set Access-Control-Allow-Origin "*"
+```
+
+## Endpoints da API
+
+- `POST /api/request-key` - Obter API Key
+- `POST /api/calculate` - Calcular emissões (requer X-API-Key)
+- `GET /api/info` - Informação da API
+- `POST /admin/login` - Login admin
+- `GET /admin/keys` - Listar keys (admin)
+- `PUT /admin/keys/{key}/block` - Bloquear key (admin)
+- `DELETE /admin/keys/{key}` - Eliminar key (admin)
 
 ## Suporte
 
-Email: b.green@gmail.com
+António Amorim - https://www.antonioamorim.pt

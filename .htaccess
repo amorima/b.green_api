@@ -1,0 +1,26 @@
+RewriteEngine On
+RewriteBase /
+
+# Permitir acesso a ficheiros estáticos
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Redirecionar index para public/index.html
+RewriteRule ^$ public/index.html [L]
+
+# API Routes
+RewriteRule ^api/request-key/?$ api/request-key.php [L]
+RewriteRule ^api/calculate/?$ api/calculate.php [L]
+RewriteRule ^api/info/?$ api/info.php [L]
+
+# Admin Routes
+RewriteRule ^admin/login/?$ api/admin-login.php [L]
+RewriteRule ^admin/keys/?$ api/admin-keys.php [QSA,L]
+RewriteRule ^admin/keys/([^/]+)/block/?$ api/admin-keys.php?key=$1&action=block [QSA,L]
+RewriteRule ^admin/keys/([^/]+)/?$ api/admin-keys.php?key=$1 [QSA,L]
+
+# Segurança
+<FilesMatch "\.(json|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
