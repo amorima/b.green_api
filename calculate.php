@@ -100,7 +100,19 @@ if (isset($DEVICE_POWER_WATTS[$type])) {
     sendError(400, "Tipo de cálculo inválido");
 }
 
-sendSuccess('Cálculo efetuado com sucesso', [
-    'carbon' => round($carbon, 3),
-    'unit' => $unit
-]);
+$response = [
+    'type' => $type,
+    'carbon_kg_co2' => round($carbon, 3),
+    'unit' => $unit,
+    'factor' => isset($CARBON_FACTORS[$type]) ? $CARBON_FACTORS[$type] : (isset($DEVICE_POWER_WATTS[$type]) ? $CARBON_FACTORS['electricity'] : null)
+];
+
+if (isset($minutes)) {
+    $response['minutes'] = $minutes;
+    $response['kwh'] = isset($kwh) ? round($kwh, 4) : null;
+}
+if (isset($amount)) {
+    $response['amount'] = $amount;
+}
+
+sendSuccess('Cálculo efetuado com sucesso', $response);
