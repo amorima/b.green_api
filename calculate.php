@@ -45,13 +45,62 @@ $keys[$keyIndex]['lastUsed'] = date('c');
 saveApiKeys($keys);
 
 $input = getJsonInput();
-$values = $input['values'] ?? [];
-if (!is_array($values) || empty($values)) {
-    sendError(400, 'Valores inválidos');
+$type = $input['type'] ?? null;
+
+$CARBON_FACTORS = [
+    'car_gasoline' => 0.17,
+    'car_diesel' => 0.185,
+    'car_electric' => 0.045,
+    'bus' => 0.089,
+    'train' => 0.041,
+    'plane_short' => 0.255,
+    'plane_long' => 0.195,
+    'electricity' => 0.188,
+    'natural_gas' => 0.203,
+    'heating_oil' => 0.265,
+    'meal_meat' => 7.2,
+    'meal_vegetarian' => 2.0,
+    'meal_vegan' => 1.5,
+    'waste_general' => 0.45,
+    'waste_recycled' => 0.021,
+    'water' => 0.149,
+];
+
+$DEVICE_POWER_WATTS = [
+    'laptop' => 50,
+    'desktop' => 200,
+    'television' => 150,
+    'air_conditioner' => 3500,
+    'refrigerator' => 150,
+    'washing_machine' => 500,
+    'dishwasher' => 1800,
+];
+
+$carbon = 0;
+$unit = "kg CO2e";
+
+if (isset($DEVICE_POWER_WATTS[$type])) {
+    // Device calculation
+    $minutes = $input['minutes'] ?? null;
+    if ($minutes === null) {
+        sendError(400, "Campo 'minutes' obrigatório para dispositivos");
+    }
+    $watts = $DEVICE_POWER_WATTS[$type];
+    $hours = $minutes / 60;
+    $kwh = ($watts * $hours) / 1000;
+    $carbon = $kwh * $CARBON_FACTORS['electricity'];
+} elseif (isset($CARBON_FACTORS[$type])) {
+    // General calculation
+    $amount = $input['amount'] ?? null;
+    if ($amount === null) {
+        sendError(400, "Campo 'amount' obrigatório");
+    }
+    $carbon = $amount * $CARBON_FACTORS[$type];
+} else {
+    sendError(400, "Tipo de cálculo inválido");
 }
 
-$result = array_sum($values);
 sendSuccess('Cálculo efetuado com sucesso', [
-    'result' => $result,
-    'count' => count($values)
+    'carbon' => round($carbon, 3),
+    'unit' => $unit
 ]);
