@@ -5,8 +5,11 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
-# Redirecionar index para public/index.html
-RewriteRule ^$ public/index.html [L]
+# Bloquear acesso direto à raiz (exceto index.php)
+RewriteCond %{REQUEST_URI} !^/index.php$
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^(?!public/|api/|index.php$).*$ - [F]
 
 # API Routes
 RewriteRule ^api/request-key/?$ api/request-key.php [L]
