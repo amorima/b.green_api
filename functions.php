@@ -72,11 +72,11 @@ function getJsonInput()
 function sendError($code, $message)
 {
     http_response_code($code);
-    echo json_encode(['success' => false, 'error' => $message]);
+    echo json_encode(['success' => false, 'error' => $message], JSON_UNESCAPED_UNICODE);
     exit();
 }
 function sendSuccess($message, $data = null)
 {
-    echo json_encode(['success' => true, 'message' => $message, 'data' => $data]);
+    echo json_encode(['success' => true, 'message' => $message, 'data' => $data], JSON_UNESCAPED_UNICODE);
     exit();
 }
